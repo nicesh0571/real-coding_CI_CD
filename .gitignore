@@ -42,6 +42,9 @@ out/
 ### VS Code ###
 .vscode/
 
+### GitHub Actions self-hosted runner ###
+actions-runner/
+
 ### CSS ###
 _site/
 *.css
