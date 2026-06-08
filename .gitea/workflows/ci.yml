@@ -34,8 +34,9 @@ jobs:
         run: ./mvnw -B -DskipTests package
 
   docker-build:
-    name: Docker Build
-    if: github.event_name == 'push' || (github.event.action == 'closed' && github.event.pull_request.merged == true)
+    name: Docker Build and Deploy
+    needs: maven-build
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event.action == 'closed' && github.event.pull_request.merged == true)
     runs-on: ubuntu-latest
 
     steps:
@@ -48,3 +49,16 @@ jobs:
             --tag spring-petclinic:${{ github.sha }} \
             --tag spring-petclinic:latest \
             .
+
+      - name: Deploy container
+        run: |
+          docker rm -f spring-petclinic || true
+          docker ps --format '{{.ID}} {{.Ports}}' \
+            | awk '/:8080->/ { print $1 }' \
+            | xargs -r docker rm -f
+          docker run -d \
+            --name spring-petclinic \
+            --restart unless-stopped \
+            -p 8080:8080 \
+            spring-petclinic:latest
+          docker ps --filter name=spring-petclinic
