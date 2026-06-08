@@ -53,8 +53,7 @@ jobs:
       - name: Deploy container
         run: |
           docker rm -f spring-petclinic || true
-          docker ps --format '{{.ID}} {{.Ports}}' \
-            | awk '/:8080->/ { print $1 }' \
+          docker ps -q --filter "publish=8080" \
             | xargs -r docker rm -f
           docker run -d \
             --name spring-petclinic \
